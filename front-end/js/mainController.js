@@ -137,20 +137,58 @@ app.controller('mainController', function ($scope, $http, $location, $cookies) {
         });
     };
 
-$scope.addtoCart = function(idofThingClickedOn){
-    var oldCart = $cookies.get('cart');
-    var newCart = oldCart + ',' + idofThingClickedOn;
-    $cookies.put('cart', newCart);
-}
-
-$scope.getCart = function(){
-    var cart = $cookies.get('cart');
-    var cartItemsArray = cart.split(',');
-    for (var i = 0; i < cartItemsArray.length; i++) {
-        cartItemsArray[i] // get the properties of each item
+    $scope.addtoCart = function(idofThingClickedOn){
+        var oldCart = $cookies.get('cart');
+        var newCart = oldCart + ',' + idofThingClickedOn;
+        $cookies.put('cart', newCart);
     }
-}
 
+    $scope.getCart = function(){
+        var cart = $cookies.get('cart');
+        var cartItemsArray = cart.split(',');
+        for (var i = 0; i < cartItemsArray.length; i++) {
+            cartItemsArray[i] // get the properties of each item
+        }
+    }
+
+    var testSK = sk_test_bWG4PAoIYg2YjabReOAUcyya;
+    var testPK = pk_test_h3HbD6hpWsvYsqfaFtI0SKkP;
+    var liveSK = sk_live_uvtD7Mc45hb04aDeNR8tVMpX;
+    var livePK = pk_live_iNi4Ji9yC7drV0DgyB1QDFRb;
+
+    $scope.payOrder = function(userOptions) {
+        $scope.errorMessage = "";
+        var handler = StripeCheckout.configure({
+            key: 'pk_test_h3HbD6hpWsvYsqfaFtI0SKkP',
+            image: 'assets/img/dc_roasters_200x124_lt.png',
+            locale: 'auto',
+            token: function(token) {
+                console.log("The token Id is: ");
+                console.log(token.id);
+
+                $http.post(apiUrl + 'stripe', {
+                    amount: $scope.total * 100,
+                    stripeToken: token.id,
+                    token: $cookies.get('token')
+                        //This will pass amount, stripeToken, and token to /payment
+                }).then(function successCallback(response) {
+                    console.log(response.data);
+                    if (response.data.success) {
+                        //Say thank you
+                        $location.path('/receipt');
+                    } else {
+                        $scope.errorMessage = response.data.message;
+                        //same on the checkout page
+                    }
+                }, function errorCallback(response) {});
+            }
+        });
+        handler.open({
+            name: 'DC Roasters',
+            description: 'A Better Way To Grind',
+            amount: $scope.total * 100
+        });
+    };
 
 });
 
@@ -170,6 +208,9 @@ app.config(function ($routeProvider) {
         controller: 'mainController'
     }).when('/delivery',{
         templateUrl: 'views/delivery.html',
+        controller: 'mainController'
+    }).when('/payment',{
+        templateUrl: 'views/payment.html',
         controller: 'mainController'
     }).otherwise({
         redirectTo: '/'

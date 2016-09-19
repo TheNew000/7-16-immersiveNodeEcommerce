@@ -6,7 +6,9 @@ mongoose.connect(mongoUrl);
 var User = require('../models/user');
 var bcrypt = require('bcrypt-nodejs');
 var randToken = require('rand-token');
-
+var stripe = require('stripe')('config.secretTestKey');
+//The config module which gives you access to config.secretTestKey
+var config = require('../config/config'); 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -91,6 +93,19 @@ router.get('getUserData', function(req, res, next){
             }
         });
     }
+});
+
+router.post('/stripe', function(req,res,next){
+    stripe.charges.create({
+        amount: req.body.amount,
+        currency: "usd",
+        source: req.body.stripeToken, // obtained with Stripe.js
+        description: req.body.email
+    }).then((charge) => {
+        res.json({success: 'paid'});
+    }, (err) => {
+        res.json({failure: "failedPayment"});
+    });
 });
 
 module.exports = router;
