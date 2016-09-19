@@ -1,7 +1,7 @@
 var app = angular.module('commerceApp', ['ngRoute', 'ngCookies']);
 
 app.controller('mainController', function ($scope, $http, $location, $cookies) {
-    var apiPath = "http://localhost:3000";
+    var apiPath = "http://dannyarango.com:3000";
 
     // Register Function
     $scope.register= function(){
